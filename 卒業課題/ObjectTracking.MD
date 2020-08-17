@@ -2,16 +2,29 @@
 <br>
 <br>
 
-Signateで物体追跡のコンペで２位に入賞されたIRAFM-AIチームが採用していたPolyYOLOを用いた手法を実際にやってみる。
+Signateで物体追跡のコンペで２位に入賞されたIRAFM-AIチームが採用していたPolyYOLOを用いた手法を実際にやってみる。  
+(参照)[https://gitlab.com/irafm-ai/signate_3rd_ai_edge_competition/-/tree/master](https://gitlab.com/irafm-ai/signate_3rd_ai_edge_competition/-/tree/master)
 
 ## 学習/評価フロー
 PolyYOLOを用いたフローは以下の様になっている。  
 <img src="https://github.com/takatoshi-ii/diveintocode-ml/blob/master/%E5%8D%92%E6%A5%AD%E8%AA%B2%E9%A1%8C/flow.png">
 
+①入力動画をフレーム単位で静止画に切り出し  
+②複数のPloy-YOLO検出器で学習(PolyYOLO a ～ e まで５つの検出器の学習が必要)  
+③WBF(Weighted Box Fusion)でアンサンブル学習  
+④Refiner:検出境界を高精度化  
+⑤クラス分類(自動車、歩行者 分類)  
+⑥フレーム間オブジェクトの関連付け(追跡処理)  
 
 
 ## 前処理（データ拡張）
-
+①入力動画をフレーム単位で静止画に切り出し。  
+　１動画当たり、２分（１２０秒）/５fpsなので６００フレームの画像が取得できる。  
+ 　提供されている動画数が２５個なので合計１５,０００個の静止画が取得できる。  
+ 　ただ、物体検知を学習するのに１５,０００個では少なすぎるので以下のデータ拡張を行う。  
+②PolyYOLOの学習するためにデータ拡張を行う。
+　ⅰ）インペイントを作成
+　　　他の画像のバウンディングボックスの情報を移植する。
 
 
 ## トレーニング
