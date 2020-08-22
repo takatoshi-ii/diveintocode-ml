@@ -709,7 +709,11 @@ runs = 15
 全部でruns指定回数 × data_for_yolo_training.txtの行数 × 各行のバウンディングボックスの数  
 の学習用画像とラベルファイルが出力されます。
 
-<img src="https://github.com/takatoshi-ii/diveintocode-ml/blob/master/%E5%8D%92%E6%A5%AD%E8%AA%B2%E9%A1%8C/image/flow.png">
+<img src="https://github.com/takatoshi-ii/diveintocode-ml/blob/master/%E5%8D%92%E6%A5%AD%E8%AA%B2%E9%A1%8C/image/rifiner_pedestrian.jpg">
+<img src="https://github.com/takatoshi-ii/diveintocode-ml/blob/master/%E5%8D%92%E6%A5%AD%E8%AA%B2%E9%A1%8C/image/rifiner_car.jpg">
+
+
+
 
 
 # 3 Classifier
