@@ -333,7 +333,8 @@ input_shape = (448, 864) # multiple of 32, hw chleba
 if phase == 1:
     model = create_model(input_shape, anchors, num_classes, load_pretrained=False)
 else:
-    model = create_model(input_shape, anchors, num_classes, load_pretrained=True, weights_path=r'D:\SIGNATE\Signate_3rd_AI_edge_competition\training\model1\phase1\log/model1_phase1.h5')
+    model = create_model(input_shape, anchors, num_classes, load_pretrained=True,
+    weights_path=r'D:\SIGNATE\Signate_3rd_AI_edge_competition\training\model1\phase1\log/model1_phase1.h5')
 ```
 
 
@@ -410,7 +411,8 @@ input_shape = (448, 864) # multiple of 32, hw chleba
 if phase == 1:
     model = create_model(input_shape, anchors, num_classes, load_pretrained=False)
 else:
-    model = create_model(input_shape, anchors, num_classes, load_pretrained=True, weights_path=r'D:\SIGNATE\Signate_3rd_AI_edge_competition\training\model2\phase1\log/model2_phase1.h5')
+    model = create_model(input_shape, anchors, num_classes, load_pretrained=True,
+    weights_path=r'D:\SIGNATE\Signate_3rd_AI_edge_competition\training\model2\phase1\log/model2_phase1.h5')
 ```
 
 
@@ -494,7 +496,8 @@ input_shape = (224, 448)  # chleba 3
 if phase == 1:
     model = create_model(input_shape, anchors, num_classes, load_pretrained=False)
 else:
-    model = create_model(input_shape, anchors, num_classes, load_pretrained=True, weights_path=r'D:\SIGNATE\Signate_3rd_AI_edge_competition\training\model3\phase1\log/model3_phase1.h5')
+    model = create_model(input_shape, anchors, num_classes, load_pretrained=True,
+    weights_path=r'D:\SIGNATE\Signate_3rd_AI_edge_competition\training\model3\phase1\log/model3_phase1.h5')
 ```
 
 コマンドラインで該当のパスに移動した後  
@@ -572,7 +575,8 @@ input_shape = (256, 544) #chleba 5
 if phase == 1:
     model = create_model(input_shape, anchors, num_classes, load_pretrained=False)
 else:
-    model = create_model(input_shape, anchors, num_classes, load_pretrained=True, weights_path=r'D:\SIGNATE\Signate_3rd_AI_edge_competition\training\model5\phase1\log/model5_phase1.h5')
+    model = create_model(input_shape, anchors, num_classes, load_pretrained=True,
+    weights_path=r'D:\SIGNATE\Signate_3rd_AI_edge_competition\training\model5\phase1\log/model5_phase1.h5')
 ```
 
 
@@ -656,7 +660,8 @@ input_shape = (480, 960)  # yeah, we go full res!
 if phase == 1:
     model = create_model(input_shape, anchors, num_classes, load_pretrained=False)
 else:
-    model = create_model(input_shape, anchors, num_classes, load_pretrained=True, weights_path=r'D:\SIGNATE\Signate_3rd_AI_edge_competition\training\model5\phase1\log/model4_phase1.h5')
+    model = create_model(input_shape, anchors, num_classes, load_pretrained=True,
+    weights_path=r'D:\SIGNATE\Signate_3rd_AI_edge_competition\training\model5\phase1\log/model4_phase1.h5')
 ```
 
 
@@ -677,16 +682,34 @@ D:\SIGNATE\Signate_3rd_AI_edge_competition\models/
 
 
 # 2 リファイナートレーニング
-バウンディングボックスの高精度化の為にリファイナーについて説明します。
-
-
-
+バウンディングボックスの高精度化の為にリファイナーについて説明します。  
+リファイナーを学習するため、各場運絵品ぐボックス内の画像を300x300ピクセルの平方画素に埋め込み学習をします。
 
 
 
 ## 2.1データの準備
+prepare_data_refiner.ipynbを使用します。　　
 
+＜コード概要＞
+mosaic_data.ipynbを使用します。  
+３番目のコードセルで入出力のパスを指定します。
 
+out_dir：リファイナー学習用の画像を保存するパスを指定します。このフォルダは事前に作成しておく必要があります。  
+path_labels：data_for_yolo_training.txtを格納しているパスを指定します。  
+path_labels_out：リファイナーラベル(data_for_refiner_training.txt)を保存するパスを指定します。
+runs：実行回数を指定します。デフォルトで１５回です。（かなりの時間が掛かるので５回で強制停止させました。）
+
+```python
+#FOR TRAIN IMAGES
+out_dir          = r'D:\SIGNATE\Signate_3rd_AI_edge_competition\refiner_images\train/' #the dir must exist
+path_labels      = r'D:\SIGNATE\Signate_3rd_AI_edge_competition\data_for_yolo_training.txt'
+path_labels_out  = r'D:\SIGNATE\Signate_3rd_AI_edge_competition\data_for_refiner_training.txt'
+runs = 15
+```
+全部でruns指定回数 × data_for_yolo_training.txtの行数 × 各行のバウンディングボックスの数  
+の学習用画像とラベルファイルが出力されます。
+
+<img src="https://github.com/takatoshi-ii/diveintocode-ml/blob/master/%E5%8D%92%E6%A5%AD%E8%AA%B2%E9%A1%8C/image/flow.png">
 
 
 # 3 Classifier
