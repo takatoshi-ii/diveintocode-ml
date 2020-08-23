@@ -829,7 +829,7 @@ generate_random = 12 #negative images
 全セルを実行すると、指定したフォルダに学習用画像及び検証用画像が出力されます
 
 (乗用車)  
-<img src="https://github.com/takatoshi-ii/diveintocode-ml/blob/master/%E5%8D%92%E6%A5%AD%E8%AA%B2%E9%A1%8C/image/classifier_class0.jpg"  width="80%" height="80%">  
+<img src="https://github.com/takatoshi-ii/diveintocode-ml/blob/master/%E5%8D%92%E6%A5%AD%E8%AA%B2%E9%A1%8C/image/classifier_class0.jpg"  width="240" height="240">  
 (歩行者)  
 <img src="https://github.com/takatoshi-ii/diveintocode-ml/blob/master/%E5%8D%92%E6%A5%AD%E8%AA%B2%E9%A1%8C/image/classifier_class1.jpg"  width="80%" height="80%">  
 (その他背景)  
