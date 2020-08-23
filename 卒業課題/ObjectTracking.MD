@@ -35,6 +35,11 @@ PolyYOLOを用いたフローは以下の様になっています。
 ⑤クラス分類(自動車、歩行者 分類)  
 ⑥フレーム間オブジェクトの関連付け(追跡処理)  
 
+# 1⃣学習
+　学習用のコードは、  
+[https://github.com/takatoshi-ii/diveintocode-ml/tree/master/%E5%8D%92%E6%A5%AD%E8%AA%B2%E9%A1%8C/signate_3rd_ai_edge_competition/source_codes](https://github.com/takatoshi-ii/diveintocode-ml/tree/master/%E5%8D%92%E6%A5%AD%E8%AA%B2%E9%A1%8C/signate_3rd_ai_edge_competition/source_codes)  
+にすべて格納しています。
+
 # 1 Poly-YOLOトレーニング
 
 ## 1.1 データの準備
@@ -720,8 +725,8 @@ path_labels_outで指定したパスにdata_for_refiner_training.txtが作成さ
 全部でruns指定回数 × data_for_yolo_training.txtの行数 × 各行のバウンディングボックスの数  
 の学習用画像とラベルファイルが出力されます。
 
-<img src="https://github.com/takatoshi-ii/diveintocode-ml/blob/master/%E5%8D%92%E6%A5%AD%E8%AA%B2%E9%A1%8C/image/rifiner_pedestrian.jpg" width="80%" height="80%">
-<img src="https://github.com/takatoshi-ii/diveintocode-ml/blob/master/%E5%8D%92%E6%A5%AD%E8%AA%B2%E9%A1%8C/image/rifiner_car.jpg" width="80%" height="80%">
+<img src="https://github.com/takatoshi-ii/diveintocode-ml/blob/master/%E5%8D%92%E6%A5%AD%E8%AA%B2%E9%A1%8C/image/rifiner_pedestrian.jpg" width="240" height="240">
+<img src="https://github.com/takatoshi-ii/diveintocode-ml/blob/master/%E5%8D%92%E6%A5%AD%E8%AA%B2%E9%A1%8C/image/rifiner_car.jpg" width="240" height="240">
 
 
 ## 2.1.2 検証データの作成
@@ -800,7 +805,8 @@ step1同様に、過学習し始めるまで学習を行います。
 
 # 3 Classifier
 続いて分類器を学習します。
-ここでは、乗用車と歩行者を分類できるモデルを作成します。  
+ここでは、乗用車と歩行者を分類できるモデルを作成します。
+分類器ではリファイナー同様バウンディングボックスの内容を300×300の平方画素に埋め込んだ画像を作成し、学習を行います。
 事前に分類器の学習用の画像を格納するフォルダを作成しておく必要があります。  
 まず～/images/classifier/trainフォルダを作成して下さい。  
 そのtrainフォルダの中に0,1,2の３つのサブフォルダを作成します。  
@@ -808,8 +814,6 @@ step1同様に、過学習し始めるまで学習を行います。
 検証用の画像に関しても同様に、～/images/classifier/valフォルダを作成し、そのvalフォルダの中に0,1,2のサブフォルダを作成します。
 
 ## 3.1 データの準備
-
-
 ＜コード概要＞
 prepare_data_classifier.ipynbを使用します。  
 ３番目のコードセルで各入出力のパスを指定します
@@ -831,24 +835,172 @@ generate_random = 12 #negative images
 (乗用車)  
 <img src="https://github.com/takatoshi-ii/diveintocode-ml/blob/master/%E5%8D%92%E6%A5%AD%E8%AA%B2%E9%A1%8C/image/classifier_class0.jpg"  width="240" height="240">  
 (歩行者)  
-<img src="https://github.com/takatoshi-ii/diveintocode-ml/blob/master/%E5%8D%92%E6%A5%AD%E8%AA%B2%E9%A1%8C/image/classifier_class1.jpg"  width="80%" height="80%">  
+<img src="https://github.com/takatoshi-ii/diveintocode-ml/blob/master/%E5%8D%92%E6%A5%AD%E8%AA%B2%E9%A1%8C/image/classifier_class1.jpg"  width="240" height="240">  
 (その他背景)  
-<img src="https://github.com/takatoshi-ii/diveintocode-ml/blob/master/%E5%8D%92%E6%A5%AD%E8%AA%B2%E9%A1%8C/image/classifier_class2.jpg"  width="80%" height="80%">  
+<img src="https://github.com/takatoshi-ii/diveintocode-ml/blob/master/%E5%8D%92%E6%A5%AD%E8%AA%B2%E9%A1%8C/image/classifier_class2.jpg"  width="240" height="240">  
 
 
 ## 3.2 分類器トレーニング
+＜コード概要＞  
+
+train_classifier.ipynbを使用します。  
+２番目のコードセルで各入出力のパスを指定します
+
+batch_size_all：バッチサイズを指定します。
+epochs_all：エポック数を指定します。
+imgs_train：3.1で作成した学習画像の層数を指定します。
+imgs_val：3.1で作成した学習画像の層数を指定します。
+path_train：学習画像のパスを指定します。
+path_val：検証画像のパスを指定します。
 
 
+```python
+batch_size_all    = 5
+epochs_all        = 100
+imgs_train        = 762253
+imgs_val          = 40497
+path_train        = r'D:\SIGNATE\Signate_3rd_AI_edge_competition\images\classifier\train/'
+path_val          = r'D:\SIGNATE\Signate_3rd_AI_edge_competition\images\classifier\val/'
+```
+４番目のセルの学習済みモデルの読込みをコメントアウトします。
+
+```python
+#model.load_weights(r'D:\SIGNATE\Signate_3rd_AI_edge_competition\classifier_model\effnet_ep005-loss67.592-val_loss46.489.h5')
+```
+
+５番目のセルのModelCheckpointに学習済みモデルの出力先を指定します。  
+```python
+checkpoint      = ModelCheckpoint(
+r'D:\SIGNATE\Signate_3rd_AI_edge_competition\classifier_model\effnet_ep{epoch:03d}-loss{loss:.3f}-val_loss{val_loss:.3f}-val_acc{val_acc:.3f}.h5',
+ monitor='val_loss',
+ save_weights_only=True,
+ save_best_only=False,verbose=1
+ )
+```
+
+１～５番目のセルを実行します。
 
 
+## 3.3分類器の評価
+同じくtrain_classifier.ipynbを使用します。  
+最後のセルに以下の設定を行います。
 
+target_class：０，１，２で随時実行する  
+bad_imgs：誤分類したカウント数（0スタート）  
+dir_imgs_name：各クラスが格納されているフォルダを指定する。  
+move_path：誤検知した画像を移動するパスを指定  
+
+
+```python
+target_class = 2 #realize for 0, 1, 2
+bad_imgs = 0
+dir_imgs_name   = r'D:\SIGNATE\Signate_3rd_AI_edge_competition\classifier_images\train/'+str(target_class)
+move_path       = r'D:\SIGNATE\Signate_3rd_AI_edge_competition\classifier_images\exclusion/'
+```
+
+target_classを０，１，２と順次変化させ、最後のセルを実行すると、誤分類した画像がmove_pathのほうに移動されます。
+
+
+４番目のセルの学習済みモデルの読込みを復帰させます。
+
+```python
+model.load_weights(r'D:\SIGNATE\Signate_3rd_AI_edge_competition\classifier_model\effnet_ep005-loss67.592-val_loss46.489.h5')
+```
+
+
+１～５番目のセルを再度実行し、最良の分類モデルを作成します。
 
 
 
 # 4 Matcher
+## 4.1データの準備
+Machaerによって前後のフレーム間で物体を検知し、同一の物体かどうかを判断します。  
+Matcharの学習には、唯一Signate提供の元データ(JSONファイルを使用します。)
+
+＜コード概要＞  
+prepare_data_matcher.ipynbを使用します。  
+２番目のコードセルで各入出力のパスを指定します。  
+
+path_labels：アノテーション用JSONファイルが格納されているパスを指定します。  
+path_images：動画から切り出した静止画が格納されているパスを指定します。  
+out_dir：matchaer学習用画像の出力先を指定します。  
+path_out_file：matcherラベルdata_for_matcher_training.txtを出力するパスを指定します。
+
+
+```python
+#define paths
+
+#here are the original train anotations in json
+path_labels    = r'D:\SIGNATE\Signate_3rd_AI_edge_competition\train_annotations'   
+
+#path where, the are the decoded train images. here is necessary to have images in their full resolution,
+#without top/bottom crop
+path_images    = r'D:\SIGNATE\Signate_3rd_AI_edge_competition\images'
+
+#path where, the are the decoded train images
+out_dir        = r'D:\SIGNATE\Signate_3rd_AI_edge_competition\images\matcher'
+
+path_out_file  = r'D:\SIGNATE\Signate_3rd_AI_edge_competition\data_for_matcher_training.txt'
+```
+
+３番目のコードセルで学習を行うクラスを指定します。ここでは、car(乗用車)、Pedestrian(歩行者)の２つのみとしますが、必要に応じて選択して下さい。
+
+```python
+#array that defines which classes have to be extracted.
+#classes = ['Car', 'Pedestrian', 'Truck', 'Signal', 'Signs', 'Bicycle', 'Motorbike', 'Bus', 'Svehicle', 'Train']
+classes = ['Car', 'Pedestrian']
+```
+
+全てのセルを実行します。
+
+matherよう画像と、data_for_matcher_training.txtが出力されているのを確認します。  
+
+data_for_yolo_training.txtから検証用データを切り出したのと同様に、
+data_for_matcher_training.txtからtrain_00に該当する行を切り取り、data_for_matcher_validation.txtに貼り付け、検証データを作成します。
+
+尚、作成画像のファイル名はクラス番号␣動画番号␣オブジェクトID␣ファイルカウンター(サイクリック)_.jpg  
+といったファイル名になっているので、動画番号で区別を行う。
 
 
 
+## 4.2 Matcherトレーニング
+＜コード概要＞  
+train_matcher.ipynbを使用します。  
+４番目のコードセルでラベルファイル(学習用/検証用)のパスを指定します。
+
+
+```python
+with open(r'D:\SIGNATE\Signate_3rd_AI_edge_competition\data_for_matcher_training.txt') as f:
+    lines = f.readlines()
+
+with open(r'D:\SIGNATE\Signate_3rd_AI_edge_competition\data_for_matcher_validation.txt') as f:
+    lines_val = f.readlines()
+```
+
+最後のセルで、学習済みモデルの出力先を指定します。
+```python
+checkpoint = ModelCheckpoint(
+r'D:\SIGNATE\Signate_3rd_AI_edge_competition\matcher_model/matcher_ep{epoch:03d}-loss{loss:.3f}-val_loss{val_loss:.3f}.h5',
+monitor='val_loss',
+save_weights_only=True,
+save_best_only=False,verbose=1
+)
+```
+
+全セルを実行し、学習を行います。
+
+
+以上で全てのモデルの学習が完了しました。  
+これまで、作成して来た各モデルをD:\SIGNATE\Signate_3rd_AI_edge_competition\modelsといったフォルダに格納しておきます。  
+このフォルダには以下のモデル群が格納されているものとします。  
+・model1.h5  
+・model2.h5  
+・model3.h5  
+・model4.h5  
+・model5.h5  
+・rifiner.h5  
+・classifier.h5  
+・matcher.h5  
 
 ## 評価
 
