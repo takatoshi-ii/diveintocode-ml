@@ -687,36 +687,154 @@ D:\SIGNATE\Signate_3rd_AI_edge_competition\models/
 
 
 
-## 2.1データの準備
-prepare_data_refiner.ipynbを使用します。　　
+## 2.1データの準備　
+## 2.1.1 トレーニングデータの作成
+トレーニングデータ及び検証用データの準備 　
+事前に以下のリファイナー画像を保存するフォルダを作成しておく必要があります。
+学習用：～\images\refiner_images\train/
+検証用：～\images\refiner_images\val/
+
 
 ＜コード概要＞
-mosaic_data.ipynbを使用します。  
+prepare_data_refiner.ipynbを使用します。  
 ３番目のコードセルで入出力のパスを指定します。
 
 out_dir：リファイナー学習用の画像を保存するパスを指定します。このフォルダは事前に作成しておく必要があります。  
 path_labels：data_for_yolo_training.txtを格納しているパスを指定します。  
-path_labels_out：リファイナーラベル(data_for_refiner_training.txt)を保存するパスを指定します。
+path_labels_out：リファイナー学習ラベル(data_for_refiner_training.txt)を保存するパスを指定します。
 runs：実行回数を指定します。デフォルトで１５回です。（かなりの時間が掛かるので５回で強制停止させました。）
 
 ```python
 #FOR TRAIN IMAGES
-out_dir          = r'D:\SIGNATE\Signate_3rd_AI_edge_competition\refiner_images\train/' #the dir must exist
+out_dir          = r'D:\SIGNATE\Signate_3rd_AI_edge_competition\images\refiner_images\train/' #the dir must exist
 path_labels      = r'D:\SIGNATE\Signate_3rd_AI_edge_competition\data_for_yolo_training.txt'
 path_labels_out  = r'D:\SIGNATE\Signate_3rd_AI_edge_competition\data_for_refiner_training.txt'
 runs = 15
 ```
+
+設定後、３番目のセルを実行します。
+実行後out_dirで指定したフォルダにリファイナー学習用画像が、  
+path_labels_outで指定したパスにdata_for_refiner_training.txtが作成されます。
+
+
 全部でruns指定回数 × data_for_yolo_training.txtの行数 × 各行のバウンディングボックスの数  
 の学習用画像とラベルファイルが出力されます。
 
-<img src="https://github.com/takatoshi-ii/diveintocode-ml/blob/master/%E5%8D%92%E6%A5%AD%E8%AA%B2%E9%A1%8C/image/rifiner_pedestrian.jpg">
-<img src="https://github.com/takatoshi-ii/diveintocode-ml/blob/master/%E5%8D%92%E6%A5%AD%E8%AA%B2%E9%A1%8C/image/rifiner_car.jpg">
+<img src="https://github.com/takatoshi-ii/diveintocode-ml/blob/master/%E5%8D%92%E6%A5%AD%E8%AA%B2%E9%A1%8C/image/rifiner_pedestrian.jpg" width="80%" height="80%">
+<img src="https://github.com/takatoshi-ii/diveintocode-ml/blob/master/%E5%8D%92%E6%A5%AD%E8%AA%B2%E9%A1%8C/image/rifiner_car.jpg" width="80%" height="80%">
+
+
+## 2.1.2 検証データの作成
+同様にprepare_data_refiner.ipynbを使用します。  
+３番目のコードセルで検証用データの入出力のパスを指定します。
+
+out_dir：リファイナー検証用の画像を保存するパスを指定します。このフォルダは事前に作成しておく必要があります。  
+path_labels：data_for_yolo_validating.txtを格納しているパスを指定します。  
+path_labels_out：リファイナー検証ラベル(data_for_refiner_validation.txt)を保存するパスを指定します。
+runs：実行回数を指定します。デフォルトで５回です。
+
+```python
+#FOR VALID IMAGES
+out_dir          = r'D:\SIGNATE\Signate_3rd_AI_edge_competition\images\refiner_images\val/' #the dir must exist
+path_labels      = r'D:\SIGNATE\Signate_3rd_AI_edge_competition\data_for_yolo_validating.txt'
+path_labels_out  = r'D:\SIGNATE\Signate_3rd_AI_edge_competition\data_for_refiner_validation.txt'
+runs = 5
+```
+設定後、３番目のセルを実行します。
+実行後out_dirで指定したフォルダにリファイナー学習用画像が、  
+path_labels_outで指定したパスに\data_for_refiner_validation.txtが作成されます。
 
 
 
+## 2.2 リファイナーのトレーニング
+2.1で作成したデータを元にリファイナーモデルを学習します。
+本処理も２ステップ学習を行います。
 
+＜コード概要＞
+train_refiner.ipynbを使用します。  
+２番目のセルでバッチサイズを指定します。今回はＧＰＵの都合上バッチサイズ５で実行しています。
+
+### （step1）
+３番目のコードセルでモデルの読込をコメントアウトします。
+
+```python
+#model.load_weights(r'D:\SIGNATE\Signate_3rd_AI_edge_competition\refiner_model/refiner_ep003-loss_2.959-val_loss_2.769.h5')
+```
+
+５番目のコードセルでリファイナー用のラベルファイル指定します。
+学習用ラベルと検証用ラベル両方読み込みます。
+
+```python
+with open(r'D:\SIGNATE\Signate_3rd_AI_edge_competition\data_for_refiner_training.txt') as f:
+    lines = f.readlines()
+
+with open(r'D:\SIGNATE\Signate_3rd_AI_edge_competition\data_for_refiner_validation.txt') as f:
+    lines_val = f.readlines()
+```
+
+６番目のセルで学習済みモデルの出力先を指定します。
+```python
+checkpoint      = ModelCheckpoint(
+r'D:\SIGNATE\Signate_3rd_AI_edge_competition\refiner_model/refiner_ep{epoch:03d}-loss_{loss:.3f}-val_loss_{val_loss:.3f}.h5',
+monitor='val_loss',
+save_weights_only=True,
+save_best_only=False,verbose=1
+)
+```
+
+以上の設定を行った後、全セルを実行します。  
+過学習し始めるまで学習を行います。
+
+
+### (step2)  
+３番目のコードセルのコメントアウトを戻します。
+step1で学習した最良のモデルのパスを指定してください。
+
+```python
+model.load_weights(r'D:\SIGNATE\Signate_3rd_AI_edge_competition\refiner_model/refiner_ep003-loss_2.959-val_loss_2.769.h5')
+```
+
+step1同様に、過学習し始めるまで学習を行います。
+
+以上の学習で得られた最良のモデルをrefiner_model.h5といった名前でコピーしておきます。
 
 # 3 Classifier
+続いて分類器を学習します。
+ここでは、乗用車と歩行者を分類できるモデルを作成します。  
+事前に分類器の学習用の画像を格納するフォルダを作成しておく必要があります。  
+まず～/images/classifier/trainフォルダを作成して下さい。  
+そのtrainフォルダの中に0,1,2の３つのサブフォルダを作成します。  
+この0フォルダの中に乗用車の画像が、1のフォルダに歩行者、2のフォルダにその他背景の画像が格納されます。
+検証用の画像に関しても同様に、～/images/classifier/valフォルダを作成し、そのvalフォルダの中に0,1,2のサブフォルダを作成します。
+
+## 3.1 データの準備
+
+
+＜コード概要＞
+prepare_data_classifier.ipynbを使用します。  
+３番目のコードセルで各入出力のパスを指定します
+
+out_dir：学習用の画像保存パスを指定  
+out_dir_val：検証用の画像保存パスを指定  
+path_labels：data_for_yolo_training.txtを格納しているパスを指定
+generate_random：背景画像作成回数
+
+```python
+out_dir       = r'D:\SIGNATE\Signate_3rd_AI_edge_competition\images\classifier\train' #the directory has to be created!
+out_dir_val   = r'D:\SIGNATE\Signate_3rd_AI_edge_competition\images\classifier\val' #the directory has to be created!
+path_labels   = r'D:\SIGNATE\Signate_3rd_AI_edge_competition/data_for_yolo_training.txt'
+generate_random = 12 #negative images
+```
+
+全セルを実行すると、指定したフォルダに学習用画像及び検証用画像が出力されます
+
+
+
+## 3.2 分類器トレーニング
+
+
+
+
 
 
 
