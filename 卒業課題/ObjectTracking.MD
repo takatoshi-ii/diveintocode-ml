@@ -1074,7 +1074,7 @@ predictメソッドは変更なし。
 ## 1.2 predictor.py
 1.1で設定したのpredictor.pyを呼び出すモジュールrun.pyを作成します。
 
-```python {.line-number}
+```python
 from predictor import ScoringService
 from os import listdir
 import json
@@ -1092,16 +1092,24 @@ for video_file_name in video_file_names:
     full_video_file_name = "/".join([input_folder, video_file_name])
     full_json_file_name = "/".join([output_folder, video_file_name + ".json"])
     print("{} into {}".format(full_video_file_name, full_json_file_name))
-    #print("\t ★★★★★predicting")
-
     print("predict")
     res = ScoringService.predict(full_video_file_name)
-    print("\t ★★★★★saving")
     with open(full_json_file_name, "w") as f:
         json.dump(res, f)
 ```
 
+6行目ScoringService.get_modelへモデルへのパスを渡してやります  
+```python
+ScoringService.get_model(r"D:\SIGNATE\Signate_3rd_AI_edge_competition\model")
+```
 
+19行目ScoringService.get_modelへモデルへのパスを渡してやります  
+```python
+    res = ScoringService.predict(full_video_file_name)
+```
 
+resに推論結果のJSONデータが帰ってくるので、それをファイルにdumpすれば、推論結果のJSONファイルの完成。
 
 ## 3⃣ 動画作成
+Signateのコンペに提出するのは2⃣までの推論結果でいいのですが、やはり実際動画上で物体追跡が行われているか確認したいので、  
+以下にバウンディングボックス付き動画の作成方法を示します。
