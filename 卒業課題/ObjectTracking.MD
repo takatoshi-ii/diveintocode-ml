@@ -35,7 +35,7 @@ PolyYOLOを用いたフローは以下の様になっています。
 ⑤クラス分類(自動車、歩行者 分類)  
 ⑥フレーム間オブジェクトの関連付け(追跡処理)  
 
-# 1⃣学習
+# 1⃣ 学習
 　学習用のコードは、  
 [https://github.com/takatoshi-ii/diveintocode-ml/tree/master/%E5%8D%92%E6%A5%AD%E8%AA%B2%E9%A1%8C/signate_3rd_ai_edge_competition/source_codes](https://github.com/takatoshi-ii/diveintocode-ml/tree/master/%E5%8D%92%E6%A5%AD%E8%AA%B2%E9%A1%8C/signate_3rd_ai_edge_competition/source_codes)  
 にすべて格納しています。
@@ -1002,8 +1002,106 @@ save_best_only=False,verbose=1
 ・classifier.h5  
 ・matcher.h5  
 
-## 評価
+## 2⃣ 評価
+1⃣で学習した各モデルを使って評価を行いテストデータに対して、アノテーションデータを予想する。
+今回はtrain_00.mp4をテストデータとして用いる。
+
+ここからのコードは、  
+[https://github.com/takatoshi-ii/diveintocode-ml/tree/master/%E5%8D%92%E6%A5%AD%E8%AA%B2%E9%A1%8C/signate_3rd_ai_edge_competition/scoring_service/src](https://github.com/takatoshi-ii/diveintocode-ml/tree/master/%E5%8D%92%E6%A5%AD%E8%AA%B2%E9%A1%8C/signate_3rd_ai_edge_competition/scoring_service/src)  
+に格納している。
+
+## 1.1 predictor.py
+＜コード概要＞  
+predictor.pyの中のScoringServiceクラスでのget_modelメソッドで、学習済みのモデルを登録します。  
+モデルへのパスは、外部から引数で渡されるものと想定しています。
+```python
+    def get_model(cls, model_path='../model'):
+```
+
+
+以下のコードで学習済みモデルを順次登録していきます。  
+まずは、PolyYOLOモデルから登録していきます。  
+model_path：読込むモデルを指定します。  
+model_image_size：該当するモデルの解像度を指定します。(解像度を変更した場合は、ここも変更する必要があります。)  
+
+anchors_path：  
+    - model4の場合：'yolos/yolo_anchors_full_res.txt'  
+    - それ以外　　：'yolos/yolo_anchors.txt'  
+classes_path：  
+    - model4の場合：'yolos/yolo_classes_pedest_only.txt'  
+    - それ以外　　：'yolos/yolo_classes.txt'  
+
+
+```python
+      cls.model.append(
+          yolo.YOLO(
+              model_path=model_path+'/model1.h5',
+              model_image_size=(448, 864),
+              score=0.5,
+              iou=0.5,
+              anchors_path='yolos/yolo_anchors.txt',
+              classes_path='yolos/yolo_classes.txt'
+          )
+      )
+```
+
+続いて、リファイナー～matcherの各モデルを登録していきます。
+
+```python
+cls.model.append(load_model(model_path + '/classifier.h5'))
+cls.model[-1]._make_predict_function()
+cls.model.append(load_model(model_path + '/refiner.h5'))
+cls.model[-1]._make_predict_function()
+cls.model.append(load_model(model_path + '/matcher.h5'))
+cls.model[-1]._make_predict_function()
+cls.model.append(load_model(model_path + '/refiner_pedest.h5'))
+cls.model[-1]._make_predict_function()
+```
+
+ん・・・？　refiner_pedestなんて学習していないんだけど・・・
+
+恐らく歩行者に特化してリファイナーを学習したものだと考えられます。
+
+また、_make_predict_function()に関しては、以下のQiitaを参考に  
+[Kerasにおける"_make_predict_function()"の重要性](https://qiita.com/surumetic/items/0abd718b366ce2b2a0e0)
+
+どうやらGPU上でモデルの事前コンパイルを通しておくようです。
+
+
+predictメソッドは変更なし。
+
+
+## 1.2 predictor.py
+1.1で設定したのpredictor.pyを呼び出すモジュールrun.pyを作成します。
+
+```python {.line-number}
+from predictor import ScoringService
+from os import listdir
+import json
+
+print("get_model")
+ScoringService.get_model(r"D:\SIGNATE\Signate_3rd_AI_edge_competition\model")
+
+input_folder = r"D:\SIGNATE\Signate_3rd_AI_edge_competition\test\video"
+output_folder = r"D:\SIGNATE\Signate_3rd_AI_edge_competition\test\annotation"
+video_file_names = [f for f in listdir(r"D:\SIGNATE\Signate_3rd_AI_edge_competition\test\video") if f.endswith(".mp4")]
+
+print(video_file_names)
+
+for video_file_name in video_file_names:
+    full_video_file_name = "/".join([input_folder, video_file_name])
+    full_json_file_name = "/".join([output_folder, video_file_name + ".json"])
+    print("{} into {}".format(full_video_file_name, full_json_file_name))
+    #print("\t ★★★★★predicting")
+
+    print("predict")
+    res = ScoringService.predict(full_video_file_name)
+    print("\t ★★★★★saving")
+    with open(full_json_file_name, "w") as f:
+        json.dump(res, f)
+```
 
 
 
-## 動画作成
+
+## 3⃣ 動画作成
