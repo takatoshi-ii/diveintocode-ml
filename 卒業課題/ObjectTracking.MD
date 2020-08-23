@@ -1113,3 +1113,37 @@ resに推論結果のJSONデータが帰ってくるので、それをファイ�
 ## 3⃣ 動画作成
 Signateのコンペに提出するのは2⃣までの推論結果でいいのですが、やはり実際動画上で物体追跡が行われているか確認したいので、  
 以下にバウンディングボックス付き動画の作成方法を示します。
+デバッグ用に作成したので、コードが汚いですが、そのうち直します。
+
+ここからは、以下のパスのコードの説明を行います。
+[https://github.com/takatoshi-ii/diveintocode-ml/tree/master/%E5%8D%92%E6%A5%AD%E8%AA%B2%E9%A1%8C/signate_3rd_ai_edge_competition/make_movie](https://github.com/takatoshi-ii/diveintocode-ml/tree/master/%E5%8D%92%E6%A5%AD%E8%AA%B2%E9%A1%8C/signate_3rd_ai_edge_competition/make_movie)
+
+＜コード概要＞  
+Create_BBox_Movie.ipynbを使用します。  
+２つ目のコードセルで、JSONアノテーションファイルと該当する動画のフレーム画像のパスを指定します。
+
+path_labels：アノテーションファイルのパスを指定します。
+
+```python
+path_labels    = r'D:\SIGNATE\Signate_3rd_AI_edge_competition\train_annotations\train_00.json'   
+
+classes = ['Car', 'Pedestrian', 'Truck', 'Signal']
+```
+
+３つ目のコードせるのリストBox_Frameにフレーム単位のバウンディングボックスのリストが格納されていきます。  
+
+４つめのコードせるでは、各クラスのバウンディングボックスの色を指定しています。  
+今回のコンペでは、追跡対象は乗用車と歩行者の２つのみです。  
+ここでは。
+・乗用車：ピンク    
+・歩行者：黄色    
+で色分けしています。
+
+５つ目のセルdetect_imageメソッドでは、静止画とバウンディングボックスの値から、  
+フレーム画像上にImageDrawによって指定した色で矩形を描画しています。  
+
+
+６つ目のセルdetect_videoメソッドでは動画の格納パスと作成するバウンディングボックス付き動画のパスを受け取ります。    
+受け取った動画格納パスからopenCVを使って、１フレームづつ読込み、３つ目のコードセルで設定したBox_Frameの該当フレームを  
+detect_imageメソッドに渡し、戻り値として受け取ったバウンディングボックス付きの静止画を動画の１フレームとして作成動画に追記します。  
+この処理を動画のフレーム数分行い、最終的なバウンディングボックス付きの動画を取得することが出来ます。
