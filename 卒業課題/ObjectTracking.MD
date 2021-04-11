@@ -681,8 +681,8 @@ python yolo_v4_full_phase2.py
 
 
 以上でPolyYOLOの学習は終了です。
-各モデルのphase2で作成した最良モデルをまとめて
-D:\SIGNATE\Signate_3rd_AI_edge_competition\models/
+各モデルのphase2で作成した最良モデルをまとめて  
+D:\SIGNATE\Signate_3rd_AI_edge_competition\models/  
 のフォルダにmodel1.h5～model5.h5といった名前にして保存しておきます。
 
 
@@ -695,9 +695,9 @@ D:\SIGNATE\Signate_3rd_AI_edge_competition\models/
 ## 2.1データの準備　
 ## 2.1.1 トレーニングデータの作成
 トレーニングデータ及び検証用データの準備 　
-事前に以下のリファイナー画像を保存するフォルダを作成しておく必要があります。
-学習用：～\images\refiner_images\train/
-検証用：～\images\refiner_images\val/
+事前に以下のリファイナー画像を保存するフォルダを作成しておく必要があります。  
+学習用：～\images\refiner_images\train/  
+検証用：～\images\refiner_images\val/  
 
 
 ＜コード概要＞
@@ -706,7 +706,7 @@ prepare_data_refiner.ipynbを使用します。
 
 out_dir：リファイナー学習用の画像を保存するパスを指定します。このフォルダは事前に作成しておく必要があります。  
 path_labels：data_for_yolo_training.txtを格納しているパスを指定します。  
-path_labels_out：リファイナー学習ラベル(data_for_refiner_training.txt)を保存するパスを指定します。
+path_labels_out：リファイナー学習ラベル(data_for_refiner_training.txt)を保存するパスを指定します。  
 runs：実行回数を指定します。デフォルトで１５回です。（かなりの時間が掛かるので５回で強制停止させました。）
 
 ```python
@@ -735,7 +735,7 @@ path_labels_outで指定したパスにdata_for_refiner_training.txtが作成さ
 
 out_dir：リファイナー検証用の画像を保存するパスを指定します。このフォルダは事前に作成しておく必要があります。  
 path_labels：data_for_yolo_validating.txtを格納しているパスを指定します。  
-path_labels_out：リファイナー検証ラベル(data_for_refiner_validation.txt)を保存するパスを指定します。
+path_labels_out：リファイナー検証ラベル(data_for_refiner_validation.txt)を保存するパスを指定します。  
 runs：実行回数を指定します。デフォルトで５回です。
 
 ```python
@@ -796,7 +796,8 @@ save_best_only=False,verbose=1
 step1で学習した最良のモデルのパスを指定してください。
 
 ```python
-model.load_weights(r'D:\SIGNATE\Signate_3rd_AI_edge_competition\refiner_model/refiner_ep003-loss_2.959-val_loss_2.769.h5')
+model.load_weights(
+r'D:\SIGNATE\Signate_3rd_AI_edge_competition\refiner_model/refiner_ep003-loss_2.959-val_loss_2.769.h5')
 ```
 
 step1同様に、過学習し始めるまで学習を行います。
@@ -953,7 +954,7 @@ classes = ['Car', 'Pedestrian']
 
 全てのセルを実行します。
 
-matherよう画像と、data_for_matcher_training.txtが出力されているのを確認します。  
+Matcher用画像と、data_for_matcher_training.txtが出力されているのを確認します。  
 
 data_for_yolo_training.txtから検証用データを切り出したのと同様に、
 data_for_matcher_training.txtからtrain_00に該当する行を切り取り、data_for_matcher_validation.txtに貼り付け、検証データを作成します。
@@ -1115,7 +1116,7 @@ Signateのコンペに提出するのは2⃣までの推論結果でいいので
 以下にバウンディングボックス付き動画の作成方法を示します。
 デバッグ用に作成したので、コードが汚いですが、そのうち直します。
 
-ここからは、以下のパスのコードの説明を行います。
+ここからは、以下のパスのコードの説明を行います。  
 [https://github.com/takatoshi-ii/diveintocode-ml/tree/master/%E5%8D%92%E6%A5%AD%E8%AA%B2%E9%A1%8C/signate_3rd_ai_edge_competition/make_movie](https://github.com/takatoshi-ii/diveintocode-ml/tree/master/%E5%8D%92%E6%A5%AD%E8%AA%B2%E9%A1%8C/signate_3rd_ai_edge_competition/make_movie)
 
 ＜コード概要＞  
@@ -1134,7 +1135,7 @@ classes = ['Car', 'Pedestrian', 'Truck', 'Signal']
 
 ４つめのコードせるでは、各クラスのバウンディングボックスの色を指定しています。  
 今回のコンペでは、追跡対象は乗用車と歩行者の２つのみです。  
-ここでは。
+ここでは、  
 ・乗用車：ピンク    
 ・歩行者：黄色    
 で色分けしています。
@@ -1147,3 +1148,7 @@ classes = ['Car', 'Pedestrian', 'Truck', 'Signal']
 受け取った動画格納パスからopenCVを使って、１フレームづつ読込み、３つ目のコードセルで設定したBox_Frameの該当フレームを  
 detect_imageメソッドに渡し、戻り値として受け取ったバウンディングボックス付きの静止画を動画の１フレームとして作成動画に追記します。  
 この処理を動画のフレーム数分行い、最終的なバウンディングボックス付きの動画を取得することが出来ます。
+
+4⃣作成動画サンプル
+以下のフォルダに作成した動画のサンプルを置いています。  
+[https://drive.google.com/file/d/1wLM7L2mtyeZxkqL-jp1YJI7eN36DTxur/view](https://drive.google.com/file/d/1wLM7L2mtyeZxkqL-jp1YJI7eN36DTxur/view)
